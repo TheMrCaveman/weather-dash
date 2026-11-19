@@ -21,7 +21,8 @@
     --u: min(1vw, 1.75vh);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); overflow: hidden; cursor: none; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); overflow: hidden; }
+  html.kiosk, html.kiosk body { cursor: none; }
   body {
     font-family: "Roboto", "Noto Sans", "Segoe UI", "DejaVu Sans", system-ui, sans-serif;
     display: grid;
@@ -173,8 +174,11 @@ const OPEN_METEO = "https://api.open-meteo.com/v1/forecast?" + new URLSearchPara
   minutely_15: "precipitation",
   daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset",
 });
-const BR_RAINTEXT = `https://gpsgadget.buienradar.nl/data/raintext?lat=${LAT.toFixed(2)}&lon=${LON.toFixed(2)}`;
-const BR_FEED = "https://data.buienradar.nl/2.0/feed/json";
+// Served by server.py on the Pi: fetch Buienradar through it. Opened as a local file: fetch directly.
+const VIA_SERVER = location.protocol.startsWith("http") && !location.hostname.endsWith("github.io");
+const BR_RAINTEXT = VIA_SERVER ? "api/raintext" : `https://gpsgadget.buienradar.nl/data/raintext?lat=${LAT.toFixed(2)}&lon=${LON.toFixed(2)}`;
+const BR_FEED = VIA_SERVER ? "api/feed" : "https://data.buienradar.nl/2.0/feed/json";
+if (location.protocol === "file:") document.documentElement.classList.add("kiosk");
 const RADAR_URLS = (w, h) => [
   `https://image.buienradar.nl/2.0/image/animation/RadarMapRainNL?height=${h}&width=${w}&renderBackground=True&renderBranding=False&renderText=True`,
   `https://api.buienradar.nl/image/1.0/RadarMapNL?w=${w}&h=${h}`,

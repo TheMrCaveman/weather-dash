@@ -11,7 +11,22 @@ Layout in the style of a Home Assistant weather dashboard:
 Refreshes every 5 minutes. If Buienradar can't be reached, it falls back to Open-Meteo.
 Buienradar data is free for non-commercial use with credit to Buienradar.nl.
 
-## Install — Raspberry Pi OS Lite (no desktop)
+## Install — Pi as a web server (no monitor) ← recommended
+Every PC on the network opens the dashboard in its browser. The Pi also fetches
+Buienradar's data for them, so everything works in any browser without special settings.
+
+On the Pi (Raspberry Pi OS Lite):
+```
+sudo apt-get install -y git
+git clone https://github.com/TheMrCaveman/weather-dash.git ~/weather-dash
+cd ~/weather-dash && bash install-server.sh
+```
+Then open **http://<pi-hostname>.local** (e.g. http://weather.local) or http://<pi-ip> on any PC.
+
+Update later: `cd ~/weather-dash && git pull && sudo systemctl restart weather-dash`
+Status / logs: `systemctl status weather-dash` · `journalctl -u weather-dash -n 30`
+
+## Alternative — Pi with its own screen, no desktop (kiosk)
 1. Flash **Raspberry Pi OS Lite (64-bit)** with Raspberry Pi Imager. In the Imager settings,
    set your username/password and Wi-Fi, and enable SSH.
 2. Boot the Pi with the screen connected and run:
@@ -25,7 +40,7 @@ Buienradar data is free for non-commercial use with credit to Buienradar.nl.
 It auto-logs in on the screen and starts Chromium full-screen in `cage` (a minimal
 kiosk compositor). SSH sessions are unaffected. To stop it: SSH in and `pkill cage`.
 
-## Install — Raspberry Pi OS with desktop
+## Alternative — Pi with its own screen and desktop (kiosk)
 1. Raspberry Pi OS **with desktop**, connected to Wi-Fi/ethernet.
 2. `git clone https://github.com/TheMrCaveman/weather-dash.git ~/weather-dash`
 3. `cd ~/weather-dash && bash install.sh && sudo reboot`

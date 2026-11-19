@@ -6,22 +6,27 @@
 <title>Weather · Rotterdam</title>
 <style>
   :root {
-    --bg: #111111;
-    --bar: #1c1c1c;
-    --card: #232323;
-    --line: #333;
-    --grid: #2e2e2e;
-    --text: #e1e1e1;
-    --muted: #9b9b9b;
-    --blue: #ff9800;
-    --sky: #ffb74d;
-    --red: #ef5350;
-    --purple: #42a5f5;
-    --amber: #ffc107;
+    --bg: #0b0e11;
+    --bar: transparent;
+    --card: #161d23;                         /* solid card colour (chart dots etc.) */
+    --card-bg: linear-gradient(155deg, rgba(44, 64, 78, .55) 0%, rgba(24, 31, 38, .9) 45%, rgba(15, 19, 23, .95) 100%);
+    --edge: rgba(255, 255, 255, .07);
+    --line: #26303a;
+    --grid: rgba(255, 255, 255, .06);
+    --text: #eef2f6;
+    --muted: #8a96a3;
+    --blue: #3d9cf5;                         /* main accent: lines, tags, highlights */
+    --sky: #f4f7fa;                          /* big values (white, like the reference) */
+    --red: #f5c242;                          /* temperature / feels like (warm yellow) */
+    --purple: #5ac8fa;                       /* rain / dew point (cyan) */
+    --amber: #f5c242;
     --u: min(1vw, 1.75vh);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); overflow: hidden; }
+  html, body { height: 100%; color: var(--text); overflow: hidden; }
+  html { background: var(--bg); }
+  body { background: radial-gradient(1100px 650px at 12% -5%, rgba(40, 72, 92, .45), transparent 65%),
+                     radial-gradient(900px 600px at 95% 110%, rgba(30, 60, 80, .35), transparent 60%), var(--bg); }
   html.kiosk, html.kiosk body { cursor: none; }
   body {
     font-family: "Roboto", "Noto Sans", "Segoe UI", "DejaVu Sans", system-ui, sans-serif;
@@ -31,7 +36,7 @@
 
   /* top bar */
   .topbar { background: var(--bar); display: flex; align-items: center; gap: calc(var(--u)*2.4);
-    padding: calc(var(--u)*.9) calc(var(--u)*2); border-bottom: 1px solid #000; }
+    padding: calc(var(--u)*.9) calc(var(--u)*2); border-bottom: 1px solid var(--edge); }
   .tab { font-size: calc(var(--u)*1.6); font-weight: 500; color: var(--muted); letter-spacing: .03em; }
   .tab.on { color: var(--text); border-bottom: 2px solid var(--blue); padding-bottom: calc(var(--u)*.35); }
   .topbar .grow { flex: 1; }
@@ -43,8 +48,8 @@
     grid-template-rows: minmax(0, 2.1fr) minmax(0, 1fr);
     gap: calc(var(--u)*1); padding: calc(var(--u)*1) calc(var(--u)*1) calc(var(--u)*2.2); }
   .col1 { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: calc(var(--u)*1); min-height: 0; }
-  .card { background: var(--card); border-radius: calc(var(--u)*1); padding: calc(var(--u)*1.2) calc(var(--u)*1.5);
-    min-height: 0; min-width: 0; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+  .card { background: var(--card-bg); border: 1px solid var(--edge); border-radius: calc(var(--u)*1.6); padding: calc(var(--u)*1.2) calc(var(--u)*1.5);
+    min-height: 0; min-width: 0; display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04); }
   .title { font-size: calc(var(--u)*1.75); font-weight: 500; color: var(--text); opacity: .85; }
 
   /* forecast card */
@@ -66,7 +71,7 @@
   .vals { display: flex; justify-content: space-between; gap: calc(var(--u)*1); margin-top: calc(var(--u)*.4); }
   .val { min-width: 0; }
   .val .v { font-size: calc(var(--u)*2.6); line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .val .v small { font-size: .5em; margin-left: .1em; }
+  .val .v small { font-size: .5em; margin-left: .1em; color: var(--muted); }
   .val .l { font-size: calc(var(--u)*1.2); color: var(--text); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .val.right { text-align: right; }
   .chart { flex: 1; min-height: 0; position: relative; margin-top: calc(var(--u)*.6); }
@@ -93,7 +98,7 @@
   /* day detail overlay */
   #day { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 10; }
   #day.open { display: flex; }
-  .dbox { background: var(--card); border-radius: calc(var(--u)*1.2); width: min(92vw, calc(var(--u)*95)); height: min(88vh, calc(var(--u)*58));
+  .dbox { background: var(--card-bg), var(--bg); border: 1px solid var(--edge); border-radius: calc(var(--u)*1.2); width: min(92vw, calc(var(--u)*95)); height: min(88vh, calc(var(--u)*58));
     padding: calc(var(--u)*2) calc(var(--u)*2.4); display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: calc(var(--u)*1.4); box-shadow: 0 10px 40px rgba(0,0,0,.6); }
   .dhead { display: flex; align-items: center; gap: calc(var(--u)*1.6); }
   .dhead .di { font-size: calc(var(--u)*6); line-height: 1; }
@@ -104,7 +109,7 @@
   .dhead .dtemp .lo { color: var(--muted); font-size: .7em; margin-left: .3em; }
   .dhead .x { font-size: calc(var(--u)*3); color: var(--muted); cursor: pointer; padding: 0 calc(var(--u)*.6); align-self: flex-start; }
   .dstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: calc(var(--u)*1); }
-  .dstats > div { background: #2b2b2b; border-radius: calc(var(--u)*.8); padding: calc(var(--u)*1) calc(var(--u)*1.2); min-width: 0; }
+  .dstats > div { background: rgba(255,255,255,.04); border: 1px solid var(--edge); border-radius: calc(var(--u)*.8); padding: calc(var(--u)*1) calc(var(--u)*1.2); min-width: 0; }
   .dstats .v { font-size: calc(var(--u)*2.4); color: var(--sky); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .dstats .v small { font-size: .55em; }
   .dstats .l { font-size: calc(var(--u)*1.25); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

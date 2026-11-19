@@ -41,7 +41,7 @@
   main { display: grid; min-height: 0;
     grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr));
     grid-template-rows: minmax(0, 2.1fr) minmax(0, 1fr);
-    gap: calc(var(--u)*1); padding: calc(var(--u)*1); }
+    gap: calc(var(--u)*1); padding: calc(var(--u)*1) calc(var(--u)*1) calc(var(--u)*2.2); }
   .col1 { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: calc(var(--u)*1); min-height: 0; }
   .card { background: var(--card); border-radius: calc(var(--u)*1); padding: calc(var(--u)*1.2) calc(var(--u)*1.5);
     min-height: 0; min-width: 0; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
@@ -85,7 +85,7 @@
   .radar .msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
     color: var(--muted); font-size: calc(var(--u)*1.8); text-align: center; padding: 2em; }
 
-  #status { position: fixed; right: calc(var(--u)*1.4); bottom: calc(var(--u)*.15); font-size: calc(var(--u)*1); color: #666; }
+  #status { position: fixed; right: calc(var(--u)*1.4); bottom: calc(var(--u)*.4); font-size: calc(var(--u)*1); color: #666; }
   #status.err { color: var(--red); }
 </style>
 </head>
@@ -239,7 +239,7 @@ function chart(el, opt) {
   const y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
   let s = "";
   // y grid / labels (5 lines)
-  const steps = (H - pt - pb) < fs * 7 ? 2 : 4;
+  const inner = H - pt - pb, steps = inner < fs * 3.2 ? 1 : inner < fs * 7 ? 2 : 4;
   for (let k = 0; k <= steps; k++) {
     const v = lo + (hi - lo) * k / steps, yy = y(v);
     s += `<line x1="${pl}" x2="${W - pr}" y1="${yy}" y2="${yy}" stroke="var(--grid)" stroke-width="1"/>`;
@@ -283,7 +283,7 @@ function chart(el, opt) {
         + `<rect x="${cx - tw / 2}" y="${ty}" width="${tw}" height="${th}" rx="2" fill="var(--blue)"/>`
         + `<text x="${cx}" y="${ty + th * .74}" text-anchor="middle" font-size="${fs}" fill="#fff">${txt}</text>`;
     };
-    if (val.length) {
+    if (val.length && Math.max(...val) - Math.min(...val) > 1e-9) {
       const iMax = v.indexOf(Math.max(...val)), iMin = v.indexOf(Math.min(...val));
       if (opt.markMax !== false) s += tag(iMax, true);
       if (opt.markMin !== false && iMin !== iMax && Math.max(...val) - Math.min(...val) > 1e-9) s += tag(iMin, y(v[iMin]) > H - pb - fs * 2.2);

@@ -85,6 +85,33 @@
   .radar .msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
     color: var(--muted); font-size: calc(var(--u)*1.8); text-align: center; padding: 2em; }
 
+  .day-btn { cursor: pointer; border-radius: calc(var(--u)*.8); transition: background .15s; }
+  .fc-days .day-btn { padding: calc(var(--u)*.3) 0; }
+  .day-btn:hover { background: rgba(255,255,255,.06); }
+  html.kiosk .day-btn { cursor: none; }
+
+  /* day detail overlay */
+  #day { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 10; }
+  #day.open { display: flex; }
+  .dbox { background: var(--card); border-radius: calc(var(--u)*1.2); width: min(92vw, calc(var(--u)*95)); height: min(88vh, calc(var(--u)*58));
+    padding: calc(var(--u)*2) calc(var(--u)*2.4); display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: calc(var(--u)*1.4); box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+  .dhead { display: flex; align-items: center; gap: calc(var(--u)*1.6); }
+  .dhead .di { font-size: calc(var(--u)*6); line-height: 1; }
+  .dhead .dt { flex: 1; }
+  .dhead .dt .t { font-size: calc(var(--u)*3); }
+  .dhead .dt .s { font-size: calc(var(--u)*1.7); color: var(--muted); }
+  .dhead .dtemp { font-size: calc(var(--u)*4); font-variant-numeric: tabular-nums; }
+  .dhead .dtemp .lo { color: var(--muted); font-size: .7em; margin-left: .3em; }
+  .dhead .x { font-size: calc(var(--u)*3); color: var(--muted); cursor: pointer; padding: 0 calc(var(--u)*.6); align-self: flex-start; }
+  .dstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: calc(var(--u)*1); }
+  .dstats > div { background: #2b2b2b; border-radius: calc(var(--u)*.8); padding: calc(var(--u)*1) calc(var(--u)*1.2); min-width: 0; }
+  .dstats .v { font-size: calc(var(--u)*2.4); color: var(--sky); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dstats .v small { font-size: .55em; }
+  .dstats .l { font-size: calc(var(--u)*1.25); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dcharts { display: grid; grid-template-columns: 1.4fr 1fr; gap: calc(var(--u)*1.6); min-height: 0; }
+  .dcharts > div { display: flex; flex-direction: column; min-height: 0; }
+  .dcharts .title { font-size: calc(var(--u)*1.5); }
+
   #status { position: fixed; right: calc(var(--u)*1.4); bottom: calc(var(--u)*.4); font-size: calc(var(--u)*1); color: #666; }
   #status.err { color: var(--red); }
 </style>
@@ -102,7 +129,7 @@
   <main>
     <div class="col1">
       <section class="card">
-        <div class="fc-top">
+        <div class="fc-top day-btn" id="fc-today">
           <div class="fc-icon" id="fc-icon">·</div>
           <div class="fc-desc"><div class="t" id="fc-desc">Loading…</div><div class="s" id="fc-src"></div></div>
           <div class="fc-temp"><div class="t" id="fc-temp">-- °C</div><div class="s" id="fc-hilo"></div></div>
@@ -162,6 +189,7 @@
     </section>
   </main>
   <div id="status"></div>
+  <div id="day"><div class="dbox" id="dbox"></div></div>
 
 <script>
 // ============ settings ============
@@ -178,9 +206,9 @@ const RELOAD_HOURS = 6;
 const OPEN_METEO = "https://api.open-meteo.com/v1/forecast?" + new URLSearchParams({
   latitude: LAT, longitude: LON, timezone: TZ, past_days: 1, forecast_days: 7, wind_speed_unit: "kmh",
   current: "temperature_2m,apparent_temperature,relative_humidity_2m,is_day,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,cloud_cover,precipitation",
-  hourly: "temperature_2m,apparent_temperature,dew_point_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_gusts_10m,precipitation,cloud_cover",
+  hourly: "temperature_2m,apparent_temperature,dew_point_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_gusts_10m,precipitation,precipitation_probability,cloud_cover,weather_code,is_day",
   minutely_15: "precipitation",
-  daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset",
+  daily: "weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,precipitation_hours,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,uv_index_max,sunshine_duration",
 });
 // Served by server.py on the Pi: fetch Buienradar through it. Opened as a local file: fetch directly.
 const VIA_SERVER = location.protocol.startsWith("http") && !location.hostname.endsWith("github.io");
@@ -326,7 +354,7 @@ function render() {
   $("fc-hilo").textContent = `${fmt(d.temperature_2m_max[t0], 0)} °C / ${fmt(d.temperature_2m_min[t0], 0)} °C`;
   $("fc-days").innerHTML = d.time.slice(t0 + 1, t0 + 6).map((t, k) => {
     const i = t0 + 1 + k;
-    return `<div><div class="n">${new Date(t + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short" })}</div>
+    return `<div class="day-btn" data-i="${i}"><div class="n">${new Date(t + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short" })}</div>
       <div class="i">${wmo(d.weather_code[i]).icon}</div>
       <div class="hi">${fmt(d.temperature_2m_max[i], 0)}° <span class="lo">${fmt(d.temperature_2m_min[i], 0)}°</span></div></div>`;
   }).join("");
@@ -481,6 +509,52 @@ const demo = {
 
 // ============ start ============
 try { const c = JSON.parse(localStorage.getItem("om")); if (c && !DEMO) { state.om = c; render(); } } catch (e) {}
+// ============ day details ============
+let dayTimer;
+function openDay(i) {
+  const om = state.om; if (!om) return;
+  const d = om.daily, h = om.hourly, date = d.time[i]; if (!date) return;
+  const idx = h.time.map((t, k) => t.startsWith(date) ? k : -1).filter(k => k >= 0);
+  const pick = key => idx.map(k => (h[key] || [])[k]);
+  const w = wmo(d.weather_code[i]), isToday = date === localNowISO().slice(0, 10);
+  const name = new Date(date + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const g = (k) => (d[k] || [])[i];
+  const sun = num(g("sunshine_duration")) ? (g("sunshine_duration") / 3600).toFixed(1) : "–";
+  const stat = (v, l) => `<div><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  $("dbox").innerHTML = `
+    <div class="dhead">
+      <div class="di">${w.icon}</div>
+      <div class="dt"><div class="t">${isToday ? "Today · " : ""}${name}</div><div class="s">${w.text}</div></div>
+      <div class="dtemp">${fmt(g("temperature_2m_max"), 0)}°<span class="lo">${fmt(g("temperature_2m_min"), 0)}°</span></div>
+      <div class="x" id="dclose">✕</div>
+    </div>
+    <div class="dstats">
+      ${stat(`${fmt(g("apparent_temperature_max"), 0)}° <small>/ ${fmt(g("apparent_temperature_min"), 0)}°</small>`, "Feels like max / min")}
+      ${stat(unit(fmt(g("precipitation_sum"), 1), "mm"), `Rain · ${fmt(g("precipitation_probability_max"), 0)}% chance · ${fmt(g("precipitation_hours"), 0)} h`)}
+      ${stat(unit(`${fmt(g("wind_speed_10m_max"), 0)}`, "km/h"), `Wind ${num(g("wind_direction_10m_dominant")) ? compass(g("wind_direction_10m_dominant")) : ""} · ${num(g("wind_speed_10m_max")) ? beaufort(g("wind_speed_10m_max")) : "–"} Bft · gusts ${fmt(g("wind_gusts_10m_max"), 0)}`)}
+      ${stat(`☀ ${hhmm(g("sunrise") || "T--:--")} <small>☾ ${hhmm(g("sunset") || "T--:--")}</small>`, `Sunshine ${sun} h · UV ${fmt(g("uv_index_max"), 0)}`)}
+    </div>
+    <div class="dcharts">
+      <div><div class="title"><span style="color:var(--red)">Temperature</span> · <span style="color:var(--sky)">feels like</span></div><div class="chart" id="dc-temp"></div></div>
+      <div><div class="title">Rain (mm per hour)</div><div class="chart" id="dc-rain"></div></div>
+    </div>`;
+  $("day").classList.add("open");
+  $("dclose").onclick = closeDay;
+  const times = pick("time"), lbl = (k, t) => +t.slice(11, 13) % 3 === 0;
+  let nowI = isToday ? times.findIndex(t => t.slice(0, 13) === localNowISO().slice(0, 13)) : undefined; if (nowI < 0) nowI = undefined;
+  chart($("dc-temp"), { times, nowIdx: nowI, dec: 1, mark: 0, labelFn: lbl, series: [
+    { v: pick("temperature_2m"), color: "var(--red)", width: 2.4 },
+    { v: pick("apparent_temperature"), color: "var(--sky)", width: 1.4 } ] });
+  chart($("dc-rain"), { times, nowIdx: nowI, dec: 1, yMin: 0, minSpan: 1, mark: 0, markMin: false, labelFn: (k, t) => +t.slice(11, 13) % 6 === 0,
+    series: [{ v: pick("precipitation"), color: "var(--purple)", bars: true }] });
+  clearTimeout(dayTimer); dayTimer = setTimeout(closeDay, 60_000);   // back to the dashboard after a minute
+}
+function closeDay() { $("day").classList.remove("open"); clearTimeout(dayTimer); }
+$("fc-days").addEventListener("click", e => { const b = e.target.closest(".day-btn"); if (b) openDay(+b.dataset.i); });
+$("fc-today").addEventListener("click", () => { const i = state.om?.daily.time.indexOf(localNowISO().slice(0, 10)); openDay(i >= 0 ? i : 0); });
+$("day").addEventListener("click", e => { if (e.target.id === "day") closeDay(); });
+addEventListener("keydown", e => { if (e.key === "Escape") closeDay(); });
+
 tick(); setInterval(tick, 1000);
 loadAll(); setInterval(loadAll, REFRESH_MIN * 60_000);
 loadRadar(); setInterval(loadRadar, REFRESH_MIN * 60_000);

@@ -79,9 +79,10 @@
   svg text { font-family: inherit; }
 
   /* radar */
-  .maps { grid-column: 2 / 5; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: calc(var(--u)*1); min-height: 0; }
-  .radar, .windy { color: inherit; text-decoration: none; padding: 0; overflow: hidden; position: relative; background: #0b0b0b; }
-  .radar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+  .maps { grid-column: 2 / 5; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: calc(var(--u)*1); min-height: 0; }
+  .radar, .windy { color: inherit; text-decoration: none; padding: 0; overflow: hidden; position: relative; background: #0b0b0b;
+    clip-path: inset(0 round calc(var(--u)*1.6)); isolation: isolate; }
+  .radar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
   .windy iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .windy .msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: calc(var(--u)*1.8); }
   .radar .badge { position: absolute; top: calc(var(--u)*1); left: calc(var(--u)*1.2); background: rgba(0,0,0,.6);

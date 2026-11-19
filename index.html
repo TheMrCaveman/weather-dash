@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weather · Rotterdam</title>
+<style>
+  :root {
+    --bg: #111111;
+    --bar: #1c1c1c;
+    --card: #232323;
+    --line: #333;
+    --grid: #2e2e2e;
+    --text: #e1e1e1;
+    --muted: #9b9b9b;
+    --blue: #ff9800;
+    --sky: #ffb74d;
+    --red: #ef5350;
+    --purple: #42a5f5;
+    --amber: #ffc107;
+    --u: min(1vw, 1.75vh);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); overflow: hidden; cursor: none; }
+  body {
+    font-family: "Roboto", "Noto Sans", "Segoe UI", "DejaVu Sans", system-ui, sans-serif;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  /* top bar */
+  .topbar { background: var(--bar); display: flex; align-items: center; gap: calc(var(--u)*2.4);
+    padding: calc(var(--u)*.9) calc(var(--u)*2); border-bottom: 1px solid #000; }
+  .tab { font-size: calc(var(--u)*1.6); font-weight: 500; color: var(--muted); letter-spacing: .03em; }
+  .tab.on { color: var(--text); border-bottom: 2px solid var(--blue); padding-bottom: calc(var(--u)*.35); }
+  .topbar .grow { flex: 1; }
+  .topbar .date { color: var(--muted); font-size: calc(var(--u)*1.6); }
+  .topbar .clock { font-size: calc(var(--u)*2.4); font-variant-numeric: tabular-nums; font-weight: 400; }
+
+  main { display: grid; min-height: 0;
+    grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 2.1fr) minmax(0, 1fr);
+    gap: calc(var(--u)*1); padding: calc(var(--u)*1); }
+  .col1 { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: calc(var(--u)*1); min-height: 0; }
+  .card { background: var(--card); border-radius: calc(var(--u)*1); padding: calc(var(--u)*1.2) calc(var(--u)*1.5);
+    min-height: 0; min-width: 0; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+  .title { font-size: calc(var(--u)*1.75); font-weight: 500; color: var(--text); opacity: .85; }
+
+  /* forecast card */
+  .fc-top { display: flex; align-items: center; gap: calc(var(--u)*1.2); }
+  .fc-icon { font-size: calc(var(--u)*4.4); line-height: 1; }
+  .fc-desc { flex: 1; min-width: 0; }
+  .fc-desc .t { font-size: calc(var(--u)*2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fc-desc .s { font-size: calc(var(--u)*1.25); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fc-temp { text-align: right; }
+  .fc-temp .t { font-size: calc(var(--u)*3); font-variant-numeric: tabular-nums; }
+  .fc-temp .s { font-size: calc(var(--u)*1.35); color: var(--muted); white-space: nowrap; }
+  .fc-days { display: grid; grid-template-columns: repeat(5, 1fr); text-align: center; margin-top: calc(var(--u)*.8); }
+  .fc-days .n { font-size: calc(var(--u)*1.5); }
+  .fc-days .i { font-size: calc(var(--u)*2.5); line-height: 1.25; }
+  .fc-days .hi { font-size: calc(var(--u)*1.5); font-variant-numeric: tabular-nums; }
+  .fc-days .lo { font-size: calc(var(--u)*1.35); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* big values row */
+  .vals { display: flex; justify-content: space-between; gap: calc(var(--u)*1); margin-top: calc(var(--u)*.4); }
+  .val { min-width: 0; }
+  .val .v { font-size: calc(var(--u)*2.6); line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .val .v small { font-size: .5em; margin-left: .1em; }
+  .val .l { font-size: calc(var(--u)*1.2); color: var(--text); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .val.right { text-align: right; }
+  .chart { flex: 1; min-height: 0; position: relative; margin-top: calc(var(--u)*.6); }
+  .chart svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  svg text { font-family: inherit; }
+
+  /* radar */
+  .radar { grid-column: 2 / 5; color: inherit; text-decoration: none; padding: 0; overflow: hidden; position: relative; background: #0b0b0b; }
+  .radar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .radar .badge { position: absolute; top: calc(var(--u)*1); left: calc(var(--u)*1.2); background: rgba(0,0,0,.6);
+    border-radius: calc(var(--u)*.6); padding: calc(var(--u)*.5) calc(var(--u)*.9); font-size: calc(var(--u)*1.4); }
+  .radar .badge b { color: var(--sky); font-weight: 500; }
+  .radar .msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: calc(var(--u)*1.8); text-align: center; padding: 2em; }
+
+  #status { position: fixed; right: calc(var(--u)*1.4); bottom: calc(var(--u)*.15); font-size: calc(var(--u)*1); color: #666; }
+  #status.err { color: var(--red); }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="tab on">☁ WEATHER</span>
+    <span class="tab">ROTTERDAM</span>
+    <span class="tab" id="sun"></span>
+    <span class="grow"></span>
+    <span class="date" id="date"></span>
+    <span class="clock" id="clock">--:--</span>
+  </div>
+
+  <main>
+    <div class="col1">
+      <section class="card">
+        <div class="fc-top">
+          <div class="fc-icon" id="fc-icon">·</div>
+          <div class="fc-desc"><div class="t" id="fc-desc">Loading…</div><div class="s" id="fc-src"></div></div>
+          <div class="fc-temp"><div class="t" id="fc-temp">-- °C</div><div class="s" id="fc-hilo"></div></div>
+        </div>
+        <div class="fc-days" id="fc-days"></div>
+      </section>
+      <section class="card">
+        <div class="title">Temps</div>
+        <div class="vals">
+          <div class="val"><div class="v" id="v-temp" style="color:var(--sky)">–</div><div class="l">Temperature</div></div>
+          <div class="val"><div class="v" id="v-feel" style="color:var(--red)">–</div><div class="l">Feels like</div></div>
+          <div class="val"><div class="v" id="v-dew" style="color:var(--purple)">–</div><div class="l">Dew point</div></div>
+        </div>
+        <div class="chart" id="c-temp"></div>
+      </section>
+    </div>
+
+    <a class="card radar" id="radar" href="https://www.buienradar.nl/" target="_blank" rel="noopener" title="Open Buienradar.nl">
+      <div class="msg" id="radar-msg">Loading rain radar…</div>
+      <img id="radar-img" alt="" style="display:none">
+    </a>
+
+    <section class="card">
+      <div class="title">Wind</div>
+      <div class="vals">
+        <div class="val"><div class="v" id="v-wind" style="color:var(--sky)">–</div><div class="l" id="l-wind">Wind speed</div></div>
+        <div class="val right"><div class="v" id="v-gust" style="color:var(--sky)">–</div><div class="l">Gusts</div></div>
+      </div>
+      <div class="chart" id="c-wind"></div>
+    </section>
+    <section class="card">
+      <div class="title">Pressure</div>
+      <div class="vals">
+        <div class="val"><div class="v" id="v-pres" style="color:var(--sky)">–</div><div class="l">Pressure</div></div>
+        <div class="val right"><div class="v" id="v-trend">–</div><div class="l">Last 3 hours</div></div>
+      </div>
+      <div class="chart" id="c-pres"></div>
+    </section>
+    <section class="card">
+      <div class="title">Humidity</div>
+      <div class="vals">
+        <div class="val"><div class="v" id="v-hum" style="color:var(--sky)">–</div><div class="l">Humidity</div></div>
+        <div class="val right"><div class="v" id="v-cloud">–</div><div class="l">Cloud cover</div></div>
+      </div>
+      <div class="chart" id="c-hum"></div>
+    </section>
+    <section class="card">
+      <div class="title">Rain</div>
+      <div class="vals">
+        <div class="val"><div class="v" id="v-rate" style="color:var(--purple)">–</div><div class="l" id="l-rate">Next 2 hours</div></div>
+        <div class="val right"><div class="v" id="v-rain24" style="color:var(--sky)">–</div><div class="l">Last 24 h</div></div>
+      </div>
+      <div class="chart" id="c-rain"></div>
+    </section>
+  </main>
+  <div id="status"></div>
+
+<script>
+// ============ settings ============
+const PLACE = "Rotterdam";
+const LAT = 51.922, LON = 4.479;
+const TZ = "Europe/Amsterdam";
+const BR_STATION = 6344;            // Buienradar weather station Rotterdam 
+const HOURS_BACK = 24, HOURS_AHEAD = 12;
+const REFRESH_MIN = 5;
+const RELOAD_HOURS = 6;
+
+const OPEN_METEO = "https://api.open-meteo.com/v1/forecast?" + new URLSearchParams({
+  latitude: LAT, longitude: LON, timezone: TZ, past_days: 1, forecast_days: 7, wind_speed_unit: "kmh",
+  current: "temperature_2m,apparent_temperature,relative_humidity_2m,is_day,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,cloud_cover,precipitation",
+  hourly: "temperature_2m,apparent_temperature,dew_point_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_gusts_10m,precipitation,cloud_cover",
+  minutely_15: "precipitation",
+  daily: "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset",
+});
+const BR_RAINTEXT = `https://gpsgadget.buienradar.nl/data/raintext?lat=${LAT.toFixed(2)}&lon=${LON.toFixed(2)}`;
+const BR_FEED = "https://data.buienradar.nl/2.0/feed/json";
+const RADAR_URLS = (w, h) => [
+  `https://image.buienradar.nl/2.0/image/animation/RadarMapRainNL?height=${h}&width=${w}&renderBackground=True&renderBranding=False&renderText=True`,
+  `https://api.buienradar.nl/image/1.0/RadarMapNL?w=${w}&h=${h}`,
+];
+
+// ============ helpers ============
+const $ = id => document.getElementById(id);
+const DEMO = new URLSearchParams(location.search).has("demo");
+const WMO = {
+  0:["Clear sky","☀️","🌙"], 1:["Mainly clear","🌤️","🌙"], 2:["Partly cloudy","⛅","☁️"], 3:["Overcast","☁️"],
+  45:["Fog","🌫️"], 48:["Rime fog","🌫️"], 51:["Light drizzle","🌦️","🌧️"], 53:["Drizzle","🌧️"], 55:["Heavy drizzle","🌧️"],
+  56:["Freezing drizzle","🌧️"], 57:["Freezing drizzle","🌧️"], 61:["Light rain","🌦️","🌧️"], 63:["Rain","🌧️"], 65:["Heavy rain","🌧️"],
+  66:["Freezing rain","🌧️"], 67:["Freezing rain","🌧️"], 71:["Light snow","🌨️"], 73:["Snow","🌨️"], 75:["Heavy snow","❄️"],
+  77:["Snow grains","🌨️"], 80:["Rain showers","🌦️","🌧️"], 81:["Rain showers","🌧️"], 82:["Violent showers","⛈️"],
+  85:["Snow showers","🌨️"], 86:["Snow showers","❄️"], 95:["Thunderstorm","⛈️"], 96:["Thunderstorm, hail","⛈️"], 99:["Thunderstorm, hail","⛈️"],
+};
+const wmo = (c, day = 1) => { const w = WMO[c] || ["–", "❔"]; return { text: w[0], icon: (!day && w[2]) || w[1] }; };
+const BFT = [1, 6, 12, 20, 29, 39, 50, 62, 75, 89, 103, 118];
+const beaufort = kmh => { let b = 0; while (b < BFT.length && kmh >= BFT[b]) b++; return b; };
+const DIRS = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const compass = deg => DIRS[Math.round(deg / 22.5) % 16];
+const hhmm = iso => iso.slice(11, 16);
+const num = v => typeof v === "number" && isFinite(v);
+const fmt = (v, d = 0) => num(v) ? v.toFixed(d) : "–";
+const unit = (v, u) => `${v}<small>${u}</small>`;
+const u = () => Math.min(innerWidth / 100, innerHeight * 0.0175);
+function localNowISO() {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: TZ, hourCycle: "h23",
+    year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
+    .formatToParts(new Date()).map(x => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+}
+async function getJSON(url) { const r = await fetch(url, { cache: "no-store" }); if (!r.ok) throw new Error(r.status); return r.json(); }
+async function getText(url) { const r = await fetch(url, { cache: "no-store" }); if (!r.ok) throw new Error(r.status); return r.text(); }
+
+// ============ chart (HA history-graph look) ============
+// opt: { times[], series:[{v[], color, width, fill, bars}], nowIdx, dec, mark: index of series to label min/max, yMin, labelEvery }
+function chart(el, opt) {
+  const W = el.clientWidth, H = el.clientHeight;
+  if (W < 50 || H < 30) return;
+  const fs = Math.max(9, u() * 1.15), pl = fs * 3.1, pr = fs * .4, pt = fs * 1.7, pb = fs * 1.6;
+  const n = opt.times.length;
+  const all = opt.series.flatMap(s => s.v).filter(num);
+  if (!all.length) { el.innerHTML = ""; return; }
+  let lo = Math.min(...all), hi = Math.max(...all);
+  if (opt.yMin !== undefined) lo = Math.min(lo, opt.yMin);
+  if (hi - lo < (opt.minSpan || 1)) { const m = (hi + lo) / 2, s = (opt.minSpan || 1) / 2; hi = m + s; lo = opt.yMin !== undefined ? Math.max(opt.yMin, m - s) : m - s; if (opt.yMin !== undefined && lo === opt.yMin) hi = lo + (opt.minSpan || 1); }
+  const pad = (hi - lo) * .08; hi += pad; if (opt.yMin === undefined) lo -= pad;
+  const x = i => pl + (n === 1 ? 0 : i * (W - pl - pr) / (n - 1));
+  const y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
+  let s = "";
+  // y grid / labels (5 lines)
+  const steps = (H - pt - pb) < fs * 7 ? 2 : 4;
+  for (let k = 0; k <= steps; k++) {
+    const v = lo + (hi - lo) * k / steps, yy = y(v);
+    s += `<line x1="${pl}" x2="${W - pr}" y1="${yy}" y2="${yy}" stroke="var(--grid)" stroke-width="1"/>`;
+    s += `<text x="${pl - fs * .4}" y="${yy + fs * .35}" text-anchor="end" font-size="${fs}" fill="var(--muted)">${v.toFixed(opt.dec ?? 1)}</text>`;
+  }
+  // x labels
+  const every = opt.labelEvery || ((W - pl) / n * 6 < fs * 3.6 ? 12 : 6);
+  opt.times.forEach((t, i) => {
+    const hr = +t.slice(11, 13), mi = +t.slice(14, 16);
+    if (opt.labelFn ? opt.labelFn(i, t) : (mi === 0 && hr % every === 0))
+      s += `<text x="${x(i)}" y="${H - fs * .2}" text-anchor="middle" font-size="${fs}" fill="var(--muted)">${hhmm(t)}</text>`;
+  });
+  // future shading + now line
+  if (num(opt.nowIdx) && opt.nowIdx < n - 1) {
+    s += `<rect x="${x(opt.nowIdx)}" y="${pt}" width="${W - pr - x(opt.nowIdx)}" height="${H - pt - pb}" fill="#fff" opacity=".03"/>`;
+    s += `<line x1="${x(opt.nowIdx)}" x2="${x(opt.nowIdx)}" y1="${pt - fs * .3}" y2="${H - pb}" stroke="var(--muted)" stroke-dasharray="3 4" stroke-width="1"/>`;
+  }
+  // series
+  opt.series.forEach(se => {
+    if (se.bars) {
+      const bw = Math.max(2, (W - pl - pr) / n * .7);
+      se.v.forEach((v, i) => { if (num(v) && v > 0) {
+        s += `<rect x="${x(i) - bw / 2}" y="${y(v)}" width="${bw}" height="${Math.max(1.5, y(lo) - y(v))}" fill="${se.color}" opacity="${num(opt.nowIdx) && i > opt.nowIdx ? .55 : .95}"/>`; } });
+      return;
+    }
+    const pts = se.v.map((v, i) => num(v) ? [x(i), y(v)] : null);
+    const path = (a, b) => pts.slice(a, b + 1).filter(Boolean).map(p => p.join(",")).join(" ");
+    const cut = num(opt.nowIdx) ? opt.nowIdx : n - 1;
+    if (se.fill) s += `<polygon points="${x(0)},${y(lo)} ${path(0, n - 1)} ${x(n - 1)},${y(lo)}" fill="${se.color}" opacity=".12"/>`;
+    s += `<polyline points="${path(0, cut)}" fill="none" stroke="${se.color}" stroke-width="${se.width || 2}" stroke-linejoin="round"/>`;
+    if (cut < n - 1) s += `<polyline points="${path(cut, n - 1)}" fill="none" stroke="${se.color}" stroke-width="${se.width || 2}" stroke-dasharray="5 4" opacity=".7"/>`;
+  });
+  // min / max markers on the marked series (HA style blue tags)
+  if (opt.mark !== undefined) {
+    const v = opt.series[opt.mark].v, val = v.filter(num);
+    const tag = (i, above) => {
+      const txt = v[i].toFixed(opt.dec ?? 1), tw = fs * .62 * txt.length + fs * .8, th = fs * 1.35;
+      const cx = Math.min(Math.max(x(i), pl + tw / 2), W - pr - tw / 2), cy = y(v[i]);
+      const ty = above ? cy - th - fs * .55 : cy + fs * .55;
+      return `<circle cx="${x(i)}" cy="${cy}" r="${fs * .38}" fill="var(--card)" stroke="var(--blue)" stroke-width="2"/>`
+        + `<rect x="${cx - tw / 2}" y="${ty}" width="${tw}" height="${th}" rx="2" fill="var(--blue)"/>`
+        + `<text x="${cx}" y="${ty + th * .74}" text-anchor="middle" font-size="${fs}" fill="#fff">${txt}</text>`;
+    };
+    if (val.length) {
+      const iMax = v.indexOf(Math.max(...val)), iMin = v.indexOf(Math.min(...val));
+      if (opt.markMax !== false) s += tag(iMax, true);
+      if (opt.markMin !== false && iMin !== iMax && Math.max(...val) - Math.min(...val) > 1e-9) s += tag(iMin, y(v[iMin]) > H - pb - fs * 2.2);
+    }
+  }
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${s}</svg>`;
+}
+
+// ============ state ============
+const state = { om: null, br: null, rain: null };
+
+// ============ render ============
+function render() {
+  const om = state.om; if (!om) return;
+  const now = localNowISO(), h = om.hourly, c = om.current, st = state.br;
+  let nowIdx = h.time.findIndex(t => t.slice(0, 13) === now.slice(0, 13)); if (nowIdx < 0) nowIdx = Math.min(h.time.length - 1, HOURS_BACK);
+  const a = Math.max(0, nowIdx - HOURS_BACK), b = Math.min(h.time.length, nowIdx + HOURS_AHEAD + 1), ni = nowIdx - a;
+  const sl = k => h[k].slice(a, b), times = h.time.slice(a, b);
+
+  // current values: prefer Buienradar station measurements, fall back to the Open-Meteo model
+  const cur = {
+    temp: num(st?.temperature) ? st.temperature : c.temperature_2m,
+    feel: num(st?.feeltemperature) ? st.feeltemperature : c.apparent_temperature,
+    hum: num(st?.humidity) ? st.humidity : c.relative_humidity_2m,
+    pres: num(st?.airpressure) ? st.airpressure : c.pressure_msl,
+    wind: num(st?.windspeed) ? st.windspeed * 3.6 : c.wind_speed_10m,
+    gust: num(st?.windgusts) ? st.windgusts * 3.6 : c.wind_gusts_10m,
+    dir: num(st?.winddirectiondegrees) ? st.winddirectiondegrees : c.wind_direction_10m,
+    rain24: num(st?.rainFallLast24Hour) ? st.rainFallLast24Hour : sl("precipitation").slice(0, ni + 1).reduce((p, v) => p + (v || 0), 0),
+  };
+  const src = num(st?.temperature) ? `Station ${st.stationname?.replace(/^Meetstation\s*/i, "") || "Rotterdam"} · Buienradar` : "Open-Meteo model";
+
+  // forecast card
+  const w = wmo(c.weather_code, c.is_day), d = om.daily, today = d.time.indexOf(now.slice(0, 10));
+  const t0 = today < 0 ? 0 : today;
+  $("fc-icon").textContent = w.icon;
+  $("fc-desc").textContent = w.text;
+  $("fc-src").textContent = src;
+  $("fc-temp").textContent = `${fmt(cur.temp, 0)} °C`;
+  $("fc-hilo").textContent = `${fmt(d.temperature_2m_max[t0], 0)} °C / ${fmt(d.temperature_2m_min[t0], 0)} °C`;
+  $("fc-days").innerHTML = d.time.slice(t0 + 1, t0 + 6).map((t, k) => {
+    const i = t0 + 1 + k;
+    return `<div><div class="n">${new Date(t + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short" })}</div>
+      <div class="i">${wmo(d.weather_code[i]).icon}</div>
+      <div class="hi">${fmt(d.temperature_2m_max[i], 0)}° <span class="lo">${fmt(d.temperature_2m_min[i], 0)}°</span></div></div>`;
+  }).join("");
+  $("sun").textContent = `☀ ${hhmm(d.sunrise[t0])}  ☾ ${hhmm(d.sunset[t0])}`;
+
+  // temps
+  $("v-temp").innerHTML = unit(fmt(cur.temp, 1), "°C");
+  $("v-feel").innerHTML = unit(fmt(cur.feel, 1), "°C");
+  $("v-dew").innerHTML = unit(fmt(sl("dew_point_2m")[ni], 1), "°C");
+  chart($("c-temp"), { times, nowIdx: ni, dec: 1, mark: 0, series: [
+    { v: sl("temperature_2m"), color: "var(--red)", width: 2.2 },
+    { v: sl("dew_point_2m"), color: "var(--purple)", width: 1.6 } ] });
+
+  // wind
+  $("v-wind").innerHTML = unit(fmt(cur.wind, 0), "km/h");
+  $("l-wind").textContent = `${compass(cur.dir)} · ${num(st?.windspeedBft) ? st.windspeedBft : beaufort(cur.wind)} Bft`;
+  $("v-gust").innerHTML = unit(fmt(cur.gust, 0), "km/h");
+  chart($("c-wind"), { times, nowIdx: ni, dec: 0, mark: 1, markMin: false, yMin: 0, minSpan: 10, series: [
+    { v: sl("wind_speed_10m"), color: "var(--blue)", width: 2, fill: true },
+    { v: sl("wind_gusts_10m"), color: "var(--sky)", width: 1.2 } ] });
+
+  // pressure
+  const pr = sl("pressure_msl"), tr = num(pr[ni]) && num(pr[ni - 3]) ? pr[ni] - pr[ni - 3] : null;
+  $("v-pres").innerHTML = unit(fmt(cur.pres, 0), "hPa");
+  $("v-trend").innerHTML = num(tr) ? unit(`${tr > 0.3 ? "↗" : tr < -0.3 ? "↘" : "→"} ${tr > 0 ? "+" : ""}${tr.toFixed(1)}`, "hPa") : "–";
+  chart($("c-pres"), { times, nowIdx: ni, dec: 0, mark: 0, minSpan: 4, series: [{ v: pr, color: "var(--blue)", width: 2 }] });
+
+  // humidity
+  $("v-hum").innerHTML = unit(fmt(cur.hum, 0), "%");
+  $("v-cloud").innerHTML = unit(fmt(c.cloud_cover, 0), "%");
+  chart($("c-hum"), { times, nowIdx: ni, dec: 0, mark: 0, minSpan: 10, series: [{ v: sl("relative_humidity_2m"), color: "var(--blue)", width: 2 }] });
+
+  // rain: next 2 hours (Buienradar 5-min nowcast, fall back to Open-Meteo 15-min)
+  $("v-rain24").innerHTML = unit(fmt(cur.rain24, 1), "mm");
+  let rt, rv, label;
+  if (state.rain && state.rain.length) {
+    rt = state.rain.map(r => r.t); rv = state.rain.map(r => r.mmh); label = "Buienradar";
+  } else {
+    const m = om.minutely_15; let i = m.time.findIndex(t => t > now); i = Math.max(0, i - 1);
+    rt = m.time.slice(i, i + 9); rv = m.precipitation.slice(i, i + 9).map(v => (v || 0) * 4); label = "Open-Meteo";
+  }
+  const total = rv.reduce((p, v, k) => p + v * (rt.length > 12 ? 5 : 15) / 60, 0);
+  const firstWet = rv.findIndex(v => v > 0.05), firstDry = rv.findIndex(v => v <= 0.05);
+  $("v-rate").innerHTML = unit(fmt(rv[0] ?? 0, 1), "mm/h");
+  $("l-rate").textContent = total < 0.05 ? "Dry next 2 hours"
+    : rv[0] > 0.05 ? (firstDry > 0 ? `Dry from ${rt[firstDry]}` : "Rain continues")
+    : `Rain from ${rt[firstWet]}`;
+  $("l-rate").title = label;
+  const rtimes = rt.map(t => t.length === 5 ? `2000-01-01T${t}` : t);
+  chart($("c-rain"), { times: rtimes, dec: 1, yMin: 0, minSpan: 1, mark: 0, markMin: false,
+    labelFn: (i) => i % Math.ceil(rt.length / ($("c-rain").clientWidth < 260 ? 3 : 5)) === 0,
+    series: [{ v: rv, color: "var(--purple)", bars: true }] });
+}
+
+// ============ data loading ============
+async function loadAll() {
+  const errs = [];
+  try { state.om = DEMO ? demo.om() : await getJSON(OPEN_METEO); store("om", state.om); } catch (e) { errs.push("Open-Meteo"); }
+  try { state.br = DEMO ? demo.station() : pickStation(await getJSON(BR_FEED)); } catch (e) { errs.push("Buienradar station"); }
+  try { state.rain = DEMO ? demo.rain() : parseRaintext(await getText(BR_RAINTEXT)); } catch (e) { state.rain = null; errs.push("Buienradar rain"); }
+  render();
+  const t = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
+  $("status").className = errs.length ? "err" : "";
+  $("status").textContent = errs.length ? `${t} · not reachable: ${errs.join(", ")} (using fallback)` : `Updated ${t} · Buienradar.nl · Open-Meteo`;
+}
+function pickStation(feed) {
+  const list = feed?.actual?.stationmeasurements || [];
+  return list.find(s => s.stationid === BR_STATION) || null;
+}
+// raintext lines: "077|10:05" -> intensity mm/h = 10^((value-109)/32)
+function parseRaintext(txt) {
+  const rows = txt.trim().split(/\r?\n/).map(l => l.split("|")).filter(p => p.length === 2);
+  if (!rows.length) throw new Error("empty");
+  return rows.map(([v, t]) => { const n = parseInt(v, 10); return { t: t.trim(), mmh: n > 0 ? Math.round(10 ** ((n - 109) / 32) * 100) / 100 : 0 }; });
+}
+function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+// ============ radar image ============
+let radarTry = 0;
+function loadRadar() {
+  const box = $("radar"), img = $("radar-img");
+  const w = Math.min(1100, Math.round(box.clientWidth)), h = Math.min(1100, Math.round(box.clientHeight));
+  const urls = RADAR_URLS(w, h);
+  img.onload = () => { $("radar-msg").style.display = "none"; img.style.display = "";
+ };
+  img.onerror = () => {
+    radarTry++;
+    if (radarTry < urls.length) img.src = urls[radarTry] + "&_=" + Date.now();
+    else { img.style.display = "none"; $("radar-msg").style.display = ""; $("radar-msg").textContent = "Buienradar radar image not reachable – retrying in a few minutes"; }
+  };
+  radarTry = 0;
+  if (DEMO) { $("radar-msg").textContent = "Rain radar map appears here (demo mode)"; return; }
+  img.src = urls[0] + "&_=" + Date.now();
+}
+
+// ============ clock ============
+function tick() {
+  const d = new Date();
+  $("clock").textContent = d.toLocaleTimeString("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
+  $("date").textContent = d.toLocaleDateString("en-GB", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" });
+}
+
+// ============ demo data (open index.html?demo) ============
+const demo = {
+  om() {
+    const base = localNowISO().slice(0, 13) + ":00";
+    const add = (iso, min) => { const d = new Date(iso + ":00Z"); d.setUTCMinutes(d.getUTCMinutes() + min); return d.toISOString().slice(0, 16); };
+    const H = Array.from({ length: 24 * 8 }, (_, k) => add(base, (k - 24) * 60));
+    const wave = (k, a, p, o) => o + a * Math.sin((k + p) / 24 * 2 * Math.PI);
+    const rnd = k => Math.sin(k * 12.9898) * 43758.5453 % 1;
+    const Q = Array.from({ length: 16 }, (_, k) => add(base, k * 15));
+    const D = Array.from({ length: 7 }, (_, k) => add(base, k * 1440).slice(0, 10));
+    return {
+      current: { temperature_2m: 7.4, apparent_temperature: 3.9, relative_humidity_2m: 86, is_day: 1, weather_code: 2, wind_speed_10m: 22, wind_direction_10m: 235, wind_gusts_10m: 48, pressure_msl: 1004, cloud_cover: 62 },
+      hourly: { time: H,
+        temperature_2m: H.map((_, k) => wave(k, 3, -9, 7) + rnd(k) * .6),
+        apparent_temperature: H.map((_, k) => wave(k, 3, -9, 4)),
+        dew_point_2m: H.map((_, k) => wave(k, 1.5, -6, 4) + rnd(k + 3) * .4),
+        relative_humidity_2m: H.map((_, k) => wave(k, 12, 3, 80) + rnd(k) * 4),
+        pressure_msl: H.map((_, k) => 998 + k * .25 + rnd(k) * .5),
+        wind_speed_10m: H.map((_, k) => Math.abs(wave(k, 8, 0, 18) + rnd(k) * 6)),
+        wind_gusts_10m: H.map((_, k) => Math.abs(wave(k, 14, 0, 34) + rnd(k) * 10)),
+        precipitation: H.map((_, k) => [8, 9, 10, 20, 21, 30].includes(k) ? 0.4 + Math.abs(rnd(k)) * 1.5 : 0),
+        cloud_cover: H.map(() => 60) },
+      minutely_15: { time: Q, precipitation: Q.map(() => 0) },
+      daily: { time: D, weather_code: [61, 3, 80, 2, 0, 63, 71], temperature_2m_max: [9, 8, 10, 11, 7, 6, 2], temperature_2m_min: [4, 3, 5, 6, 1, 0, -2],
+        sunrise: D.map(d => d + "T08:05"), sunset: D.map(d => d + "T16:41") },
+    };
+  },
+  station: () => ({ stationid: 6344, stationname: "Meetstation Rotterdam", temperature: 7.6, feeltemperature: 4.1, humidity: 84, airpressure: 1004.2, windspeed: 6.1, windgusts: 13.4, windspeedBft: 4, winddirectiondegrees: 230, rainFallLast24Hour: 3.4 }),
+  rain() {
+    const [hh, mm] = localNowISO().slice(11, 16).split(":").map(Number);
+    let m = hh * 60 + Math.floor(mm / 5) * 5;
+    const vals = [0, 0, 0, 0, 0, 0.3, 0.8, 1.6, 2.4, 1.9, 1.1, 0.6, 0.2, 0, 0, 0, 0, 0.1, 0.4, 0.3, 0, 0, 0, 0];
+    return vals.map((v, k) => { const t = (m + k * 5) % 1440; return { t: `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`, mmh: v }; });
+  },
+};
+
+// ============ start ============
+try { const c = JSON.parse(localStorage.getItem("om")); if (c && !DEMO) { state.om = c; render(); } } catch (e) {}
+tick(); setInterval(tick, 1000);
+loadAll(); setInterval(loadAll, REFRESH_MIN * 60_000);
+loadRadar(); setInterval(loadRadar, REFRESH_MIN * 60_000);
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { render(); loadRadar(); }, 300); });
+setTimeout(() => location.reload(), RELOAD_HOURS * 3_600_000);
+</script>
+</body>
+</html>

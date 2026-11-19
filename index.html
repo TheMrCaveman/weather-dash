@@ -74,8 +74,11 @@
   svg text { font-family: inherit; }
 
   /* radar */
-  .radar { grid-column: 2 / 5; color: inherit; text-decoration: none; padding: 0; overflow: hidden; position: relative; background: #0b0b0b; }
-  .radar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .maps { grid-column: 2 / 5; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: calc(var(--u)*1); min-height: 0; }
+  .radar, .windy { color: inherit; text-decoration: none; padding: 0; overflow: hidden; position: relative; background: #0b0b0b; }
+  .radar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+  .windy iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .windy .msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: calc(var(--u)*1.8); }
   .radar .badge { position: absolute; top: calc(var(--u)*1); left: calc(var(--u)*1.2); background: rgba(0,0,0,.6);
     border-radius: calc(var(--u)*.6); padding: calc(var(--u)*.5) calc(var(--u)*.9); font-size: calc(var(--u)*1.4); }
   .radar .badge b { color: var(--sky); font-weight: 500; }
@@ -117,10 +120,13 @@
       </section>
     </div>
 
-    <a class="card radar" id="radar" href="https://www.buienradar.nl/" target="_blank" rel="noopener" title="Open Buienradar.nl">
-      <div class="msg" id="radar-msg">Loading rain radar…</div>
-      <img id="radar-img" alt="" style="display:none">
-    </a>
+    <div class="maps">
+      <a class="card radar" id="radar" href="https://www.buienradar.nl/" target="_blank" rel="noopener" title="Open Buienradar.nl">
+        <div class="msg" id="radar-msg">Loading rain radar…</div>
+        <img id="radar-img" alt="" style="display:none">
+      </a>
+      <section class="card windy" id="windy"><div class="msg" id="windy-msg">Loading Windy…</div></section>
+    </div>
 
     <section class="card">
       <div class="title">Wind</div>
@@ -162,6 +168,8 @@
 const PLACE = "Rotterdam";
 const LAT = 51.922, LON = 4.479;
 const TZ = "Europe/Amsterdam";
+const WINDY_ZOOM = 7;                // Windy map zoom (higher = closer in)
+const WINDY_OVERLAY = "wind";        // wind, rain, temp, clouds, gust, pressure …
 const BR_STATION = 6344;            // Buienradar weather station Rotterdam 
 const HOURS_BACK = 24, HOURS_AHEAD = 12;
 const REFRESH_MIN = 5;
@@ -396,6 +404,20 @@ function parseRaintext(txt) {
 }
 function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
+// ============ Windy map ============
+function loadWindy() {
+  const box = $("windy");
+  if (DEMO) { $("windy-msg").textContent = "Windy map appears here (demo mode)"; return; }
+  const q = new URLSearchParams({
+    lat: LAT, lon: LON, detailLat: LAT, detailLon: LON,
+    width: box.clientWidth, height: box.clientHeight, zoom: WINDY_ZOOM,
+    level: "surface", overlay: WINDY_OVERLAY, product: "ecmwf", menu: "", message: "true", marker: "true",
+    calendar: "now", pressure: "true", type: "map", location: "coordinates", detail: "",
+    metricWind: "km/h", metricTemp: "°C", radarRange: "-1",
+  });
+  box.innerHTML = `<iframe src="https://embed.windy.com/embed2.html?${q}" title="Windy" loading="eager"></iframe>`;
+}
+
 // ============ radar image ============
 let radarTry = 0;
 function loadRadar() {
@@ -462,6 +484,7 @@ try { const c = JSON.parse(localStorage.getItem("om")); if (c && !DEMO) { state.
 tick(); setInterval(tick, 1000);
 loadAll(); setInterval(loadAll, REFRESH_MIN * 60_000);
 loadRadar(); setInterval(loadRadar, REFRESH_MIN * 60_000);
+loadWindy();
 let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { render(); loadRadar(); }, 300); });
 setTimeout(() => location.reload(), RELOAD_HOURS * 3_600_000);
 </script>

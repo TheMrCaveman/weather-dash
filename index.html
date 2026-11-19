@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Weather · Rotterdam</title>
+<title>Weer · Rotterdam</title>
 <style>
   :root {
     --bg: #0e100f;
@@ -123,7 +123,7 @@
 </head>
 <body>
   <div class="topbar">
-    <span class="tab on">☁ WEATHER</span>
+    <span class="tab on">☁ WEER</span>
     <span class="tab">ROTTERDAM</span>
     <span class="tab" id="sun"></span>
     <span class="grow"></span>
@@ -136,17 +136,17 @@
       <section class="card">
         <div class="fc-top day-btn" id="fc-today">
           <div class="fc-icon" id="fc-icon">·</div>
-          <div class="fc-desc"><div class="t" id="fc-desc">Loading…</div><div class="s" id="fc-src"></div></div>
+          <div class="fc-desc"><div class="t" id="fc-desc">Laden…</div><div class="s" id="fc-src"></div></div>
           <div class="fc-temp"><div class="t" id="fc-temp">-- °C</div><div class="s" id="fc-hilo"></div></div>
         </div>
         <div class="fc-days" id="fc-days"></div>
       </section>
       <section class="card">
-        <div class="title">Temps</div>
+        <div class="title">Temperatuur</div>
         <div class="vals">
-          <div class="val"><div class="v" id="v-temp" style="color:var(--sky)">–</div><div class="l">Temperature</div></div>
-          <div class="val"><div class="v" id="v-feel" style="color:var(--red)">–</div><div class="l">Feels like</div></div>
-          <div class="val"><div class="v" id="v-dew" style="color:var(--purple)">–</div><div class="l">Dew point</div></div>
+          <div class="val"><div class="v" id="v-temp" style="color:var(--sky)">–</div><div class="l">Temperatuur</div></div>
+          <div class="val"><div class="v" id="v-feel" style="color:var(--red)">–</div><div class="l">Gevoelstemp.</div></div>
+          <div class="val"><div class="v" id="v-dew" style="color:var(--purple)">–</div><div class="l">Dauwpunt</div></div>
         </div>
         <div class="chart" id="c-temp"></div>
       </section>
@@ -154,41 +154,41 @@
 
     <div class="maps">
       <a class="card radar" id="radar" href="https://www.buienradar.nl/" target="_blank" rel="noopener" title="Open Buienradar.nl">
-        <div class="msg" id="radar-msg">Loading rain radar…</div>
+        <div class="msg" id="radar-msg">Buienradar laden…</div>
         <img id="radar-img" alt="" style="display:none">
       </a>
-      <section class="card windy" id="windy"><div class="msg" id="windy-msg">Loading Windy…</div></section>
+      <section class="card windy" id="windy"><div class="msg" id="windy-msg">Windy laden…</div></section>
     </div>
 
     <section class="card">
       <div class="title">Wind</div>
       <div class="vals">
-        <div class="val"><div class="v" id="v-wind" style="color:var(--sky)">–</div><div class="l" id="l-wind">Wind speed</div></div>
-        <div class="val right"><div class="v" id="v-gust" style="color:var(--sky)">–</div><div class="l">Gusts</div></div>
+        <div class="val"><div class="v" id="v-wind" style="color:var(--sky)">–</div><div class="l" id="l-wind">Windsnelheid</div></div>
+        <div class="val right"><div class="v" id="v-gust" style="color:var(--sky)">–</div><div class="l">Windstoten</div></div>
       </div>
       <div class="chart" id="c-wind"></div>
     </section>
     <section class="card">
-      <div class="title">Pressure</div>
+      <div class="title">Luchtdruk</div>
       <div class="vals">
-        <div class="val"><div class="v" id="v-pres" style="color:var(--sky)">–</div><div class="l">Pressure</div></div>
-        <div class="val right"><div class="v" id="v-trend">–</div><div class="l">Last 3 hours</div></div>
+        <div class="val"><div class="v" id="v-pres" style="color:var(--sky)">–</div><div class="l">Luchtdruk</div></div>
+        <div class="val right"><div class="v" id="v-trend">–</div><div class="l">Laatste 3 uur</div></div>
       </div>
       <div class="chart" id="c-pres"></div>
     </section>
     <section class="card">
-      <div class="title">Humidity</div>
+      <div class="title">Luchtvochtigheid</div>
       <div class="vals">
-        <div class="val"><div class="v" id="v-hum" style="color:var(--sky)">–</div><div class="l">Humidity</div></div>
-        <div class="val right"><div class="v" id="v-cloud">–</div><div class="l">Cloud cover</div></div>
+        <div class="val"><div class="v" id="v-hum" style="color:var(--sky)">–</div><div class="l">Luchtvochtigheid</div></div>
+        <div class="val right"><div class="v" id="v-cloud">–</div><div class="l">Bewolking</div></div>
       </div>
       <div class="chart" id="c-hum"></div>
     </section>
     <section class="card">
-      <div class="title">Rain</div>
+      <div class="title">Neerslag</div>
       <div class="vals">
-        <div class="val"><div class="v" id="v-rate" style="color:var(--purple)">–</div><div class="l" id="l-rate">Next 2 hours</div></div>
-        <div class="val right"><div class="v" id="v-rain24" style="color:var(--sky)">–</div><div class="l">Last 24 h</div></div>
+        <div class="val"><div class="v" id="v-rate" style="color:var(--purple)">–</div><div class="l" id="l-rate">Komende 2 uur</div></div>
+        <div class="val right"><div class="v" id="v-rain24" style="color:var(--sky)">–</div><div class="l">Laatste 24 uur</div></div>
       </div>
       <div class="chart" id="c-rain"></div>
     </section>
@@ -229,17 +229,17 @@ const RADAR_URLS = (w, h) => [
 const $ = id => document.getElementById(id);
 const DEMO = new URLSearchParams(location.search).has("demo");
 const WMO = {
-  0:["Clear sky","☀️","🌙"], 1:["Mainly clear","🌤️","🌙"], 2:["Partly cloudy","⛅","☁️"], 3:["Overcast","☁️"],
-  45:["Fog","🌫️"], 48:["Rime fog","🌫️"], 51:["Light drizzle","🌦️","🌧️"], 53:["Drizzle","🌧️"], 55:["Heavy drizzle","🌧️"],
-  56:["Freezing drizzle","🌧️"], 57:["Freezing drizzle","🌧️"], 61:["Light rain","🌦️","🌧️"], 63:["Rain","🌧️"], 65:["Heavy rain","🌧️"],
-  66:["Freezing rain","🌧️"], 67:["Freezing rain","🌧️"], 71:["Light snow","🌨️"], 73:["Snow","🌨️"], 75:["Heavy snow","❄️"],
-  77:["Snow grains","🌨️"], 80:["Rain showers","🌦️","🌧️"], 81:["Rain showers","🌧️"], 82:["Violent showers","⛈️"],
-  85:["Snow showers","🌨️"], 86:["Snow showers","❄️"], 95:["Thunderstorm","⛈️"], 96:["Thunderstorm, hail","⛈️"], 99:["Thunderstorm, hail","⛈️"],
+  0:["Onbewolkt","☀️","🌙"], 1:["Overwegend helder","🌤️","🌙"], 2:["Half bewolkt","⛅","☁️"], 3:["Zwaar bewolkt","☁️"],
+  45:["Mist","🌫️"], 48:["Rijpmist","🌫️"], 51:["Lichte motregen","🌦️","🌧️"], 53:["Motregen","🌧️"], 55:["Zware motregen","🌧️"],
+  56:["IJzel (motregen)","🌧️"], 57:["IJzel (motregen)","🌧️"], 61:["Lichte regen","🌦️","🌧️"], 63:["Regen","🌧️"], 65:["Zware regen","🌧️"],
+  66:["IJzel","🌧️"], 67:["IJzel","🌧️"], 71:["Lichte sneeuw","🌨️"], 73:["Sneeuw","🌨️"], 75:["Zware sneeuw","❄️"],
+  77:["Korrelsneeuw","🌨️"], 80:["Regenbuien","🌦️","🌧️"], 81:["Regenbuien","🌧️"], 82:["Zware buien","⛈️"],
+  85:["Sneeuwbuien","🌨️"], 86:["Sneeuwbuien","❄️"], 95:["Onweer","⛈️"], 96:["Onweer met hagel","⛈️"], 99:["Onweer met hagel","⛈️"],
 };
 const wmo = (c, day = 1) => { const w = WMO[c] || ["–", "❔"]; return { text: w[0], icon: (!day && w[2]) || w[1] }; };
 const BFT = [1, 6, 12, 20, 29, 39, 50, 62, 75, 89, 103, 118];
 const beaufort = kmh => { let b = 0; while (b < BFT.length && kmh >= BFT[b]) b++; return b; };
-const DIRS = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const DIRS = ["N","NNO","NO","ONO","O","OZO","ZO","ZZO","Z","ZZW","ZW","WZW","W","WNW","NW","NNW"];
 const compass = deg => DIRS[Math.round(deg / 22.5) % 16];
 const hhmm = iso => iso.slice(11, 16);
 const num = v => typeof v === "number" && isFinite(v);
@@ -347,7 +347,7 @@ function render() {
     dir: num(st?.winddirectiondegrees) ? st.winddirectiondegrees : c.wind_direction_10m,
     rain24: num(st?.rainFallLast24Hour) ? st.rainFallLast24Hour : sl("precipitation").slice(0, ni + 1).reduce((p, v) => p + (v || 0), 0),
   };
-  const src = num(st?.temperature) ? `Station ${st.stationname?.replace(/^Meetstation\s*/i, "") || "Rotterdam"} · Buienradar` : "Open-Meteo model";
+  const src = num(st?.temperature) ? `Station ${st.stationname?.replace(/^Meetstation\s*/i, "") || "Rotterdam"} · Buienradar` : "Open-Meteo-model";
 
   // forecast card
   const w = wmo(c.weather_code, c.is_day), d = om.daily, today = d.time.indexOf(now.slice(0, 10));
@@ -359,7 +359,7 @@ function render() {
   $("fc-hilo").textContent = `${fmt(d.temperature_2m_max[t0], 0)} °C / ${fmt(d.temperature_2m_min[t0], 0)} °C`;
   $("fc-days").innerHTML = d.time.slice(t0 + 1, t0 + 6).map((t, k) => {
     const i = t0 + 1 + k;
-    return `<div class="day-btn" data-i="${i}"><div class="n">${new Date(t + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short" })}</div>
+    return `<div class="day-btn" data-i="${i}"><div class="n">${new Date(t + "T12:00:00").toLocaleDateString("nl-NL", { weekday: "short" }).replace(/^./, c => c.toUpperCase())}</div>
       <div class="i">${wmo(d.weather_code[i]).icon}</div>
       <div class="hi">${fmt(d.temperature_2m_max[i], 0)}° <span class="lo">${fmt(d.temperature_2m_min[i], 0)}°</span></div></div>`;
   }).join("");
@@ -404,9 +404,9 @@ function render() {
   const total = rv.reduce((p, v, k) => p + v * (rt.length > 12 ? 5 : 15) / 60, 0);
   const firstWet = rv.findIndex(v => v > 0.05), firstDry = rv.findIndex(v => v <= 0.05);
   $("v-rate").innerHTML = unit(fmt(rv[0] ?? 0, 1), "mm/h");
-  $("l-rate").textContent = total < 0.05 ? "Dry next 2 hours"
-    : rv[0] > 0.05 ? (firstDry > 0 ? `Dry from ${rt[firstDry]}` : "Rain continues")
-    : `Rain from ${rt[firstWet]}`;
+  $("l-rate").textContent = total < 0.05 ? "Droog komende 2 uur"
+    : rv[0] > 0.05 ? (firstDry > 0 ? `Droog vanaf ${rt[firstDry]}` : "Blijft regenen")
+    : `Regen vanaf ${rt[firstWet]}`;
   $("l-rate").title = label;
   const rtimes = rt.map(t => t.length === 5 ? `2000-01-01T${t}` : t);
   chart($("c-rain"), { times: rtimes, dec: 1, yMin: 0, minSpan: 1, mark: 0, markMin: false,
@@ -418,12 +418,12 @@ function render() {
 async function loadAll() {
   const errs = [];
   try { state.om = DEMO ? demo.om() : await getJSON(OPEN_METEO); store("om", state.om); } catch (e) { errs.push("Open-Meteo"); }
-  try { state.br = DEMO ? demo.station() : pickStation(await getJSON(BR_FEED)); } catch (e) { errs.push("Buienradar station"); }
-  try { state.rain = DEMO ? demo.rain() : parseRaintext(await getText(BR_RAINTEXT)); } catch (e) { state.rain = null; errs.push("Buienradar rain"); }
+  try { state.br = DEMO ? demo.station() : pickStation(await getJSON(BR_FEED)); } catch (e) { errs.push("Buienradar-station"); }
+  try { state.rain = DEMO ? demo.rain() : parseRaintext(await getText(BR_RAINTEXT)); } catch (e) { state.rain = null; errs.push("Buienradar-neerslag"); }
   render();
-  const t = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
+  const t = new Date().toLocaleTimeString("nl-NL", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
   $("status").className = errs.length ? "err" : "";
-  $("status").textContent = errs.length ? `${t} · not reachable: ${errs.join(", ")} (using fallback)` : `Updated ${t} · Buienradar.nl · Open-Meteo`;
+  $("status").textContent = errs.length ? `${t} · niet bereikbaar: ${errs.join(", ")} (reserve gebruikt)` : `Bijgewerkt ${t} · Buienradar.nl · Open-Meteo`;
 }
 function pickStation(feed) {
   const list = feed?.actual?.stationmeasurements || [];
@@ -440,7 +440,7 @@ function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch
 // ============ Windy map ============
 function loadWindy() {
   const box = $("windy");
-  if (DEMO) { $("windy-msg").textContent = "Windy map appears here (demo mode)"; return; }
+  if (DEMO) { $("windy-msg").textContent = "Hier komt de Windy-kaart (demomodus)"; return; }
   const q = new URLSearchParams({
     lat: LAT, lon: LON, detailLat: LAT, detailLon: LON,
     width: box.clientWidth, height: box.clientHeight, zoom: WINDY_ZOOM,
@@ -462,18 +462,18 @@ function loadRadar() {
   img.onerror = () => {
     radarTry++;
     if (radarTry < urls.length) img.src = urls[radarTry] + "&_=" + Date.now();
-    else { img.style.display = "none"; $("radar-msg").style.display = ""; $("radar-msg").textContent = "Buienradar radar image not reachable – retrying in a few minutes"; }
+    else { img.style.display = "none"; $("radar-msg").style.display = ""; $("radar-msg").textContent = "Buienradar niet bereikbaar – over een paar minuten opnieuw"; }
   };
   radarTry = 0;
-  if (DEMO) { $("radar-msg").textContent = "Rain radar map appears here (demo mode)"; return; }
+  if (DEMO) { $("radar-msg").textContent = "Hier komt de buienradar (demomodus)"; return; }
   img.src = urls[0] + "&_=" + Date.now();
 }
 
 // ============ clock ============
 function tick() {
   const d = new Date();
-  $("clock").textContent = d.toLocaleTimeString("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
-  $("date").textContent = d.toLocaleDateString("en-GB", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" });
+  $("clock").textContent = d.toLocaleTimeString("nl-NL", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
+  $("date").textContent = d.toLocaleDateString("nl-NL", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" }).replace(/^./, c => c.toUpperCase());
 }
 
 // ============ demo data (open index.html?demo) ============
@@ -522,26 +522,26 @@ function openDay(i) {
   const idx = h.time.map((t, k) => t.startsWith(date) ? k : -1).filter(k => k >= 0);
   const pick = key => idx.map(k => (h[key] || [])[k]);
   const w = wmo(d.weather_code[i]), isToday = date === localNowISO().slice(0, 10);
-  const name = new Date(date + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const name = new Date(date + "T12:00:00").toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" }).replace(/^./, c => c.toUpperCase());
   const g = (k) => (d[k] || [])[i];
   const sun = num(g("sunshine_duration")) ? (g("sunshine_duration") / 3600).toFixed(1) : "–";
   const stat = (v, l) => `<div><div class="v">${v}</div><div class="l">${l}</div></div>`;
   $("dbox").innerHTML = `
     <div class="dhead">
       <div class="di">${w.icon}</div>
-      <div class="dt"><div class="t">${isToday ? "Today · " : ""}${name}</div><div class="s">${w.text}</div></div>
+      <div class="dt"><div class="t">${isToday ? "Vandaag · " : ""}${name}</div><div class="s">${w.text}</div></div>
       <div class="dtemp">${fmt(g("temperature_2m_max"), 0)}°<span class="lo">${fmt(g("temperature_2m_min"), 0)}°</span></div>
       <div class="x" id="dclose">✕</div>
     </div>
     <div class="dstats">
-      ${stat(`${fmt(g("apparent_temperature_max"), 0)}° <small>/ ${fmt(g("apparent_temperature_min"), 0)}°</small>`, "Feels like max / min")}
-      ${stat(unit(fmt(g("precipitation_sum"), 1), "mm"), `Rain · ${fmt(g("precipitation_probability_max"), 0)}% chance · ${fmt(g("precipitation_hours"), 0)} h`)}
-      ${stat(unit(`${fmt(g("wind_speed_10m_max"), 0)}`, "km/h"), `Wind ${num(g("wind_direction_10m_dominant")) ? compass(g("wind_direction_10m_dominant")) : ""} · ${num(g("wind_speed_10m_max")) ? beaufort(g("wind_speed_10m_max")) : "–"} Bft · gusts ${fmt(g("wind_gusts_10m_max"), 0)}`)}
-      ${stat(`☀ ${hhmm(g("sunrise") || "T--:--")} <small>☾ ${hhmm(g("sunset") || "T--:--")}</small>`, `Sunshine ${sun} h · UV ${fmt(g("uv_index_max"), 0)}`)}
+      ${stat(`${fmt(g("apparent_temperature_max"), 0)}° <small>/ ${fmt(g("apparent_temperature_min"), 0)}°</small>`, "Gevoelstemp. max / min")}
+      ${stat(unit(fmt(g("precipitation_sum"), 1), "mm"), `Neerslag · ${fmt(g("precipitation_probability_max"), 0)}% kans · ${fmt(g("precipitation_hours"), 0)} uur`)}
+      ${stat(unit(`${fmt(g("wind_speed_10m_max"), 0)}`, "km/h"), `Wind ${num(g("wind_direction_10m_dominant")) ? compass(g("wind_direction_10m_dominant")) : ""} · ${num(g("wind_speed_10m_max")) ? beaufort(g("wind_speed_10m_max")) : "–"} Bft · stoten ${fmt(g("wind_gusts_10m_max"), 0)}`)}
+      ${stat(`☀ ${hhmm(g("sunrise") || "T--:--")} <small>☾ ${hhmm(g("sunset") || "T--:--")}</small>`, `Zon ${sun} uur · UV ${fmt(g("uv_index_max"), 0)}`)}
     </div>
     <div class="dcharts">
-      <div><div class="title"><span style="color:var(--red)">Temperature</span> · <span style="color:var(--sky)">feels like</span></div><div class="chart" id="dc-temp"></div></div>
-      <div><div class="title">Rain (mm per hour)</div><div class="chart" id="dc-rain"></div></div>
+      <div><div class="title"><span style="color:var(--red)">Temperatuur</span> · <span style="color:var(--sky)">gevoelstemp.</span></div><div class="chart" id="dc-temp"></div></div>
+      <div><div class="title">Neerslag (mm per uur)</div><div class="chart" id="dc-rain"></div></div>
     </div>`;
   $("day").classList.add("open");
   $("dclose").onclick = closeDay;
